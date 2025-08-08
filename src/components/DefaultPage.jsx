@@ -7,7 +7,6 @@ export default function DefaultPage() {
         <img className='w-12' src={logo}/>
       <h1 className="h1 text-emerald-950">Нет задач</h1>
       <p className='greyText'>Выбери задачу или создай новую</p>
-      <Button btnText="Создать новый проект"/>
     </section>
   );
 }

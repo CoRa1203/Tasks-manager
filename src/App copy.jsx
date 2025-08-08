@@ -5,36 +5,9 @@ import Task from "./components/Task";
 import NewTask from "./components/NewTask";
 import Modal from "./components/Modal";
 
-function reducer(tasks, action) {
-  switch (action.type) {
-    case "ADD_TASK":
-      return [...tasks, action.payload];
-    case "ADD_SUBTASK":
-      return tasks.map((task, _) => {
-        if (task.id === action.payload.taskId) {
-          return {
-            ...task,
-            subtasks: [...task.subtasks, action.payload.newSubtask],
-          };
-          // task.subtasks.push(newSubtask);
-        }
-        return task;
-      });
+  function reducer(state, action){
 
-    case "DELETE_TASK":
-       return tasks.filter((task) => task.id !== action.payload);
-      
-    case "DELETE_SUBTASK":
-      return tasks.map((task, _) => {
-        if (task.id === action.payload.taskId) {
-          task.subtasks = task.subtasks.filter(
-            (subtask) => subtask.id !== action.payload.subtaskId
-          );
-        }
-        return task;
-      });
   }
-}
 
 function App() {
   const [showPage, setShowPage] = useState(false); /*показывает/скрывает форму*/
@@ -42,34 +15,28 @@ function App() {
   //   const saved = localStorage.getItem("tasks");
   //   return JSON.parse(saved);
   // }); /*Массив задач*/
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
   const [taskToDelete, setTaskToDelete] = useState(null);
-  // const defaultTasks = [
-  //   {
-  //     id: Math.random(),
-  //     title: "",
-  //     dueDate: "",
-  //     description: "",
-  //     subtasks: [
-  //       {
-  //         id: Math.random(),
-  //         description: "",
-  //       },
-  //     ],
-  //   },
-  // ];
+  const defaultTasks = [
+    {
+      id: Math.random(),
+      title: "",
+      dueDate: "",
+      description: "",
+      subtasks: [
+        {
+          id: Math.random(),
+          description: "",
+        },
+      ],
+    },
+  ];
 
-  const [tasks, dispatch] = useReducer(reducer, [], () => {
-  const saved = localStorage.getItem("tasks");
-  return saved ? JSON.parse(saved) : []; // Пустой массив, если нет сохранённых
-});
+
+
+  const [tasks, dispatch] = useReducer(reducer, defaultTasks);
   //state — текущее состояние
   // dispatch — функция, чтобы послать команду
-
-  const selectedTask = selectedTaskId 
-    ? tasks.find(task => task.id === selectedTaskId) 
-    : null;
-
   const modal = useRef();
 
   useEffect(() => {
@@ -83,33 +50,32 @@ function App() {
   }, [tasks]);
 
   function handleAddTask(newTask) {
-    dispatch({
-      type: "ADD_TASK",
-      payload: newTask,
-    });
+    setTasks((tasks) => [...tasks, newTask]);
     setShowPage(false);
   }
 
   function handleAddSubtask(newSubtask, taskId) {
-    dispatch({
-      type: "ADD_SUBTASK",
-      payload: { newSubtask, taskId },
-    });
+    setTasks((tasks) =>
+      tasks.map((task, _) => {
+        if (task.id === taskId) {
+          return { ...task, subtasks: [...task.subtasks, newSubtask] };
+          // task.subtasks.push(newSubtask);
+        }
+        return task;
+      })
+    );
     setShowPage(false);
   }
 
   function handleSelectTaskToDelete(taskId) {
-  setTaskToDelete(taskId)
+    setTaskToDelete(taskId);
     modal.current.showModal();
   }
 
   function handleDeleteTask() {
     if (taskToDelete) {
-      dispatch({
-        type: "DELETE_TASK",
-        payload: taskToDelete,
-      });
-      setSelectedTaskId(null);
+      setTasks((tasks) => tasks.filter((task) => task.id !== taskToDelete));
+      setSelectedTask(false);
       setTaskToDelete(null);
     }
 
@@ -117,10 +83,16 @@ function App() {
   }
 
   function handleDeleteSubtask(subtaskId, taskId) {
-    dispatch({
-      type: "DELETE_SUBTASK",
-      payload: { subtaskId, taskId },
-    });
+    setTasks((tasks) =>
+      tasks.map((task, _) => {
+        if (task.id === taskId) {
+          task.subtasks = task.subtasks.filter(
+            (subtask) => subtask.id !== subtaskId
+          );
+        }
+        return task;
+      })
+    );
   }
 
   return (
@@ -129,24 +101,21 @@ function App() {
       <SideBar
         tasks={tasks}
         onAdd={() => {
-          setSelectedTaskId(null);
+          setSelectedTask(null);
           setShowPage(true);
         }}
         onSelectTask={(task) => {
           setShowPage(false);
-          setSelectedTaskId(task.id);
+          setSelectedTask(task);
         }}
       />
       <main className="pl-[20%]">
-        <Modal
-          ref={modal}
-          onDeleteTaskModal={handleDeleteTask}
-        ></Modal>
+        <Modal ref={modal} onDeleteTaskModal={handleDeleteTask}></Modal>
         {selectedTask ? (
           <div className="p-8">
             <div className="flex justify-between">
               <button
-                onClick={() => setSelectedTaskId(null)}
+                onClick={() => setSelectedTask(null)}
                 className="mb-4 text-emerald-600 hover:text-emerald-400 transition duration-300"
               >
                 ← Назад
@@ -154,9 +123,12 @@ function App() {
             </div>
             <Task
               task={selectedTask}
-              onAddSubTask={handleAddSubtask}
-              onDeleteTask={handleSelectTaskToDelete}
-              onDeleteSubTask={handleDeleteSubtask}
+              // onAddSubTask={handleAddSubtask}
+              // onDeleteTask={handleSelectTaskToDelete}
+              // onDeleteSubTask={handleDeleteSubtask}
+              onAddSubTask={() => dispatch()}
+              onDeleteTask={() => dispatch()}
+              onDeleteSubTask={() => dispatch()}
             ></Task>
           </div>
         ) : showPage ? (
