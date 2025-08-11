@@ -2,46 +2,37 @@ import Input from "./Input";
 import Button from "./Button";
 import { useState } from "react";
 
-export default function NewTask({ onAddTask, onCancel }) {
+export default function NewTask({ initialData, onAddTask, onCancel }) {
   const [newTask, setNewTask] = useState({
-    id: Math.random(),
-    title: "",
-    dueDate: "",
-    description: "",
-    subtasks: [
-      {
-        id: Math.random(),
-        description: "",
-      },
-    ],
+    id: initialData?.id || Math.random(),
+    title: initialData?.title || "",
+    dueDate: initialData?.dueDate || "",
+    description: initialData?.description || "",
+    subtasks: [],
   });
   const [error, setError] = useState(false);
 
-  function createNewTask(){
- if (newTask.title.trim() !== "") {
-        onAddTask(newTask),
-          setNewTask({
-            id: Math.random(),
-            title: "",
-            dueDate: "",
-            description: "",
-            subtasks: [
-              {
-                id: Math.random(),
-                description: "",
-              },
-            ],
-          });
-      }else{
-        setError(true)
-      }
-
+  function createNewTask() {
+    if (newTask.title.trim() !== "") {
+      onAddTask(newTask);
+      // (onAddTask(newTask),
+      //   setNewTask({
+      //     id: Math.random(),
+      //     title: "",
+      //     dueDate: "",
+      //     description: "",
+      //     subtasks: [],
+      //   }));
+    } else {
+      setError(true);
+    }
   }
 
- 
   return (
     <section className="pt-12">
-      <h2 className="h1 text-emerald-950">Добавить задачи</h2>
+      <h2 className="h1 text-emerald-950">
+        {initialData ? "Редактировать задачу" : "Добавить задачу"}
+      </h2>
       <div className="mt-8 ">
         <div className="px-8 py-10 ">
           <div className="space-y-6">
@@ -78,7 +69,7 @@ export default function NewTask({ onAddTask, onCancel }) {
                 setNewTask({ ...newTask, dueDate: e.target.value })
               }
             />
-            
+
             <div className="flex gap-2 justify-end">
               <Button btnText="Сохранить" onClick={createNewTask} />
               <Button btnText="Отмена" onClick={onCancel} />

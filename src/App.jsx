@@ -22,14 +22,21 @@ function reducer(tasks, action) {
       });
 
     case "DELETE_TASK":
-       return tasks.filter((task) => task.id !== action.payload);
-      
+      return tasks.filter((task) => task.id !== action.payload);
+
     case "DELETE_SUBTASK":
       return tasks.map((task, _) => {
         if (task.id === action.payload.taskId) {
           task.subtasks = task.subtasks.filter(
             (subtask) => subtask.id !== action.payload.subtaskId
           );
+        }
+        return task;
+      });
+    case "EDIT_TASK":
+      return tasks.map((task) => {
+        if (task.id === action.payload.taskId) {
+          return { ...task, ...action.payload.updatedTask };
         }
         return task;
       });
@@ -42,8 +49,7 @@ function App() {
   //   const saved = localStorage.getItem("tasks");
   //   return JSON.parse(saved);
   // }); /*Массив задач*/
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
-  const [taskToDelete, setTaskToDelete] = useState(null);
+  const [selectedTaskId, setSelectedTaskId] = useState(null); /*мб можно оставить один стейт taskToDelete или selectedTaskId*/
   // const defaultTasks = [
   //   {
   //     id: Math.random(),
@@ -60,14 +66,14 @@ function App() {
   // ];
 
   const [tasks, dispatch] = useReducer(reducer, [], () => {
-  const saved = localStorage.getItem("tasks");
-  return saved ? JSON.parse(saved) : []; // Пустой массив, если нет сохранённых
-});
+    const saved = localStorage.getItem("tasks");
+    return saved ? JSON.parse(saved) : []; // Пустой массив, если нет сохранённых
+  });
   //state — текущее состояние
   // dispatch — функция, чтобы послать команду
-
-  const selectedTask = selectedTaskId 
-    ? tasks.find(task => task.id === selectedTaskId) 
+  const [taskToEdit, setTaskToEdit] = useState(null);
+  const selectedTask = selectedTaskId
+    ? tasks.find((task) => task.id === selectedTaskId)
     : null;
 
   const modal = useRef();
@@ -99,18 +105,18 @@ function App() {
   }
 
   function handleSelectTaskToDelete(taskId) {
-  setTaskToDelete(taskId)
+    setSelectedTaskId(taskId);
     modal.current.showModal();
   }
 
   function handleDeleteTask() {
-    if (taskToDelete) {
+    if (selectedTaskId) {
       dispatch({
         type: "DELETE_TASK",
-        payload: taskToDelete,
+        payload: selectedTaskId,
       });
       setSelectedTaskId(null);
-      setTaskToDelete(null);
+      setSelectedTaskId(null);
     }
 
     modal.current.close();
@@ -121,6 +127,15 @@ function App() {
       type: "DELETE_SUBTASK",
       payload: { subtaskId, taskId },
     });
+  }
+
+  function handleEditTask(taskId, updatedTask) {
+    dispatch({
+      type: "EDIT_TASK",
+      payload: { taskId, updatedTask },
+    });
+    setShowPage(false);
+  setTaskToEdit(null);
   }
 
   return (
@@ -138,10 +153,7 @@ function App() {
         }}
       />
       <main className="pl-[20%]">
-        <Modal
-          ref={modal}
-          onDeleteTaskModal={handleDeleteTask}
-        ></Modal>
+        <Modal ref={modal} onDeleteTaskModal={handleDeleteTask}></Modal>
         {selectedTask ? (
           <div className="p-8">
             <div className="flex justify-between">
@@ -157,8 +169,24 @@ function App() {
               onAddSubTask={handleAddSubtask}
               onDeleteTask={handleSelectTaskToDelete}
               onDeleteSubTask={handleDeleteSubtask}
+              onStartEdit={() => {
+                // Закрываем просмотр текущей задачи
+                setSelectedTaskId(null);
+                // Сохраняем задачу, которую будем редактировать
+                setTaskToEdit(selectedTask);
+                // Показываем форму (NewTask)
+                setShowPage(true);
+              }}
             ></Task>
           </div>
+        ) : taskToEdit ? (
+          <NewTask
+            initialData={taskToEdit}
+            onCancel={() => setShowPage(false)}
+            onAddTask={(updatedTask) => {
+      handleEditTask(updatedTask.id, updatedTask);
+    }}
+          />
         ) : showPage ? (
           <NewTask
             onCancel={() => setShowPage(false)}

@@ -44,7 +44,7 @@ export default function Subtasks({
           </div>
         </div>
       </div>
-      {subtasks.map((subtask, i) => (
+      {subtasks?.map((subtask, i) => (
         <Subtask
           key={i}
           subtask={subtask}
