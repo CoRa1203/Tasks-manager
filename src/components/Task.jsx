@@ -7,7 +7,10 @@ export default function Task({
   onDeleteSubTask,
   onDeleteTask,
   onStartEdit,
+  handleEditSubtask
 }) {
+
+
   function onAddSubTask2(newSubtask) {
     onAddSubTask(newSubtask, task.id);
   }
@@ -34,6 +37,7 @@ export default function Task({
         subtasks={task.subtasks}
         onAddSubTask={onAddSubTask2}
         onDeleteSubTask={onDeleteSubtask2}
+        onEditSubtask={handleEditSubtask}
       />
       <div className="flex justify-end pt-5 border-t-2 border-gray-300 mt-5 gap-5">
          <Button

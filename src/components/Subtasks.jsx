@@ -10,14 +10,15 @@ export default function Subtasks({
   subtasks ,
   onAddSubTask,
   onDeleteSubTask,
+  initialDataSubtask,
 }) {
   const [newSubTask, setNewSubTask] = useState("");
 
   function createSubTask() {
     if (newSubTask.trim() !== "") {
-      const newObjSubtask = {id: Math.random(), description: newSubTask}
+      const newObjSubtask = {id: initialDataSubtask?.id || Math.random(), description: initialDataSubtask?.description || newSubTask}
       onAddSubTask(newObjSubtask);
-      setNewSubTask("");
+      // setNewSubTask("");
     }
   }
   return (

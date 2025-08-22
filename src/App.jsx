@@ -49,7 +49,10 @@ function App() {
   //   const saved = localStorage.getItem("tasks");
   //   return JSON.parse(saved);
   // }); /*Массив задач*/
-  const [selectedTaskId, setSelectedTaskId] = useState(null); /*мб можно оставить один стейт taskToDelete или selectedTaskId*/
+  const [selectedTaskId, setSelectedTaskId] =
+    useState(
+      null
+    ); /*мб можно оставить один стейт taskToDelete или selectedTaskId*/
   // const defaultTasks = [
   //   {
   //     id: Math.random(),
@@ -135,8 +138,17 @@ function App() {
       payload: { taskId, updatedTask },
     });
     setShowPage(false);
-  setTaskToEdit(null);
+    setTaskToEdit(null);
   }
+
+  
+  function handleEditSubtask(subtaskId, updatedSubtask){
+selectedTask.map((subtask) => {
+  if(subtask.id === subtaskId){
+    return {...subtask, ...updatedSubtask}
+  }
+  return subtask
+})  }
 
   return (
     <>
@@ -182,10 +194,13 @@ function App() {
         ) : taskToEdit ? (
           <NewTask
             initialData={taskToEdit}
-            onCancel={() => setShowPage(false)}
+            onCancel={() => {
+              setShowPage(false);
+              setTaskToEdit(null);
+            }}
             onAddTask={(updatedTask) => {
-      handleEditTask(updatedTask.id, updatedTask);
-    }}
+              handleEditTask(updatedTask.id, updatedTask);
+            }}
           />
         ) : showPage ? (
           <NewTask
